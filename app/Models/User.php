@@ -14,6 +14,7 @@ class User extends Authenticatable
     protected $primaryKey = 'id_user';
 
     protected $fillable = [
+        'nama_lengkap',
         'nama',
         'username',
         'password',
@@ -22,6 +23,7 @@ class User extends Authenticatable
         'tanggal_lahir',
         'alamat',
         'id_kecamatan',
+        'id_pendidikan',
         'no_telepon',
         'email',
         'foto', // REQUIRED
@@ -45,6 +47,16 @@ class User extends Authenticatable
     public function kecamatan()
     {
         return $this->belongsTo(Kecamatan::class, 'id_kecamatan', 'id_kecamatan');
+    }
+
+    public function pendidikan()
+    {
+        return $this->belongsTo(Pendidikan::class, 'id_pendidikan', 'id_pendidikan');
+    }
+
+    public function usia()
+    {
+        return $this->belongsTo(Usia::class, 'id_usia', 'id_usia');
     }
 
     public function lamaran()

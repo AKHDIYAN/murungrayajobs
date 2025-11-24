@@ -1,0 +1,129 @@
+/* Map Page Styles */
+.map-container {
+    background: #f9fafb;
+    padding: 2rem 0;
+    min-height: calc(100vh - 400px);
+}
+
+#map {
+    height: 600px;
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+}
+
+@media (min-width: 768px) {
+    #map {
+        height: 700px;
+    }
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.leaflet-popup-content {
+    margin: 16px;
+    font-family: "Inter", sans-serif;
+}
+
+.map-legend {
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.map-legend h4 {
+    margin: 0 0 12px 0;
+    font-weight: 700;
+    color: #1e40af;
+}
+
+.map-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.map-legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.info-panel {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 280px;
+}
+
+.info-panel h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.info-panel-stat {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.info-panel-stat strong {
+    display: block;
+    font-size: 28px;
+    font-weight: 800;
+    color: #fbbf24;
+}
+
+.reset-button {
+    background: white;
+    color: #1e40af;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+}
+
+.reset-button:hover {
+    background: #f3f4f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-control {
+    margin: 10px !important;
+}
+
+/* Marker pulse animation */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+.marker-pulse {
+    animation: pulse 2s infinite;
+}

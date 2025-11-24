@@ -21,7 +21,7 @@ class AdminCompanyController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Perusahaan::with('kecamatan');
+        $query = Perusahaan::with(['kecamatan', 'pekerjaan']);
 
         // Search
         if ($request->filled('search')) {
@@ -43,13 +43,24 @@ class AdminCompanyController extends Controller
             $query->where('is_verified', $request->verified === '1');
         }
 
-        $companies = $query->orderBy('tanggal_registrasi', 'desc')
+        $companies = $query->orderBy('created_at', 'desc')
                           ->paginate(15)
                           ->withQueryString();
 
         $kecamatanList = Kecamatan::all();
 
-        return view('admin.companies.index', compact('companies', 'kecamatanList'));
+        // Statistics
+        $verifiedCount = Perusahaan::where('is_verified', true)->count();
+        $unverifiedCount = Perusahaan::where('is_verified', false)->count();
+        $totalJobs = \App\Models\Pekerjaan::count();
+
+        return view('admin.companies.index', compact(
+            'companies', 
+            'kecamatanList',
+            'verifiedCount',
+            'unverifiedCount',
+            'totalJobs'
+        ));
     }
 
     /**
@@ -95,23 +106,50 @@ class AdminCompanyController extends Controller
     {
         $request->validate([
             'nama_perusahaan' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:perusahaan,username,' . $id . ',id_perusahaan',
             'email' => 'required|email|unique:perusahaan,email,' . $id . ',id_perusahaan',
             'no_telepon' => 'nullable|string|min:10|max:15',
             'alamat' => 'nullable|string',
             'deskripsi' => 'nullable|string',
-            'id_kecamatan' => 'required|exists:kecamatan,id_kecamatan',
+            'id_kecamatan' => 'nullable|exists:kecamatan,id_kecamatan',
+            'tahun_berdiri' => 'nullable|integer|min:1900|max:' . date('Y'),
+            'website' => 'nullable|url',
+            'is_verified' => 'required|boolean',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'password' => 'nullable|min:6|confirmed',
         ]);
 
         try {
             $company = Perusahaan::findOrFail($id);
-            $company->update($request->only([
+            
+            $data = $request->only([
                 'nama_perusahaan',
+                'username',
                 'email',
                 'no_telepon',
                 'alamat',
                 'deskripsi',
-                'id_kecamatan'
-            ]));
+                'id_kecamatan',
+                'tahun_berdiri',
+                'website',
+                'is_verified'
+            ]);
+
+            // Handle logo upload
+            if ($request->hasFile('logo')) {
+                // Delete old logo if exists
+                if ($company->logo && \Storage::exists('public/' . $company->logo)) {
+                    \Storage::delete('public/' . $company->logo);
+                }
+                $data['logo'] = $request->file('logo')->store('logos', 'public');
+            }
+
+            // Handle password update
+            if ($request->filled('password')) {
+                $data['password'] = bcrypt($request->password);
+            }
+
+            $company->update($data);
 
             // Log activity
             $admin = Auth::guard('admin')->user();
@@ -162,6 +200,25 @@ class AdminCompanyController extends Controller
             return back()->with('success', 'Perusahaan berhasil diverifikasi.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memverifikasi perusahaan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Unverify company
+     */
+    public function unverify($id)
+    {
+        try {
+            $company = Perusahaan::findOrFail($id);
+            $company->update(['is_verified' => false]);
+
+            // Log activity
+            $admin = Auth::guard('admin')->user();
+            ActivityLog::createLog('admin', $admin->id_admin, 'update', 'Unverified company: ' . $company->nama_perusahaan);
+
+            return back()->with('success', 'Verifikasi perusahaan berhasil dibatalkan.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal membatalkan verifikasi: ' . $e->getMessage());
         }
     }
 

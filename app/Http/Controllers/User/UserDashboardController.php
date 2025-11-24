@@ -128,4 +128,105 @@ class UserDashboardController extends Controller
         $user = Auth::guard('web')->user();
         return view('user.settings', compact('user'));
     }
+
+    /**
+     * Update profile with new validation
+     */
+    public function updateProfileNew(\App\Http\Requests\UpdateUserProfileRequest $request)
+    {
+        try {
+            /** @var \App\Models\User $user */
+            $user = Auth::guard('web')->user();
+            
+            // Update basic info
+            $user->nama = $request->nama;
+            $user->nik = $request->nik;
+
+            // Handle foto upload (wajib)
+            if ($request->hasFile('foto')) {
+                // Delete old photo if exists
+                if ($user->foto && \Storage::disk('public')->exists($user->foto)) {
+                    \Storage::disk('public')->delete($user->foto);
+                }
+                
+                $fotoPath = $request->file('foto')->store('uploads/user/foto', 'public');
+                $user->foto = $fotoPath;
+            }
+
+            // Handle KTP upload (optional)
+            if ($request->hasFile('ktp')) {
+                // Delete old KTP if exists
+                if ($user->ktp && \Storage::disk('public')->exists($user->ktp)) {
+                    \Storage::disk('public')->delete($user->ktp);
+                }
+                
+                $ktpPath = $request->file('ktp')->store('uploads/user/ktp', 'public');
+                $user->ktp = $ktpPath;
+            }
+
+            // Handle sertifikat upload (optional, multiple files)
+            if ($request->hasFile('sertifikat')) {
+                $sertifikatPaths = [];
+                
+                // Get existing certificates
+                if ($user->sertifikat) {
+                    $sertifikatPaths = is_array($user->sertifikat) 
+                        ? $user->sertifikat 
+                        : json_decode($user->sertifikat, true) ?? [];
+                }
+
+                foreach ($request->file('sertifikat') as $file) {
+                    $path = $file->store('uploads/user/sertifikat', 'public');
+                    $sertifikatPaths[] = $path;
+                }
+
+                $user->sertifikat = json_encode($sertifikatPaths);
+            }
+
+            $user->save();
+
+            return redirect()->route('user.profile')->with('success', 'Profil berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui profil: ' . $e->getMessage())
+                       ->withInput();
+        }
+    }
+
+    /**
+     * Update password
+     */
+    public function updatePassword(\App\Http\Requests\UpdatePasswordRequest $request)
+    {
+        try {
+            /** @var \App\Models\User $user */
+            $user = Auth::guard('web')->user();
+            
+            // Update password
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            return back()->with('success', 'Password berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui password: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update email
+     */
+    public function updateEmail(\App\Http\Requests\UpdateEmailRequest $request)
+    {
+        try {
+            /** @var \App\Models\User $user */
+            $user = Auth::guard('web')->user();
+            
+            // Update email
+            $user->email = $request->email;
+            $user->save();
+
+            return back()->with('success', 'Email berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui email: ' . $e->getMessage());
+        }
+    }
 }

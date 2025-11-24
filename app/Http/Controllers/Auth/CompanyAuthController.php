@@ -26,8 +26,8 @@ class CompanyAuthController extends Controller
      */
     public function showRegisterForm()
     {
-        $kecamatan = \App\Models\Kecamatan::all();
-        return view('auth.company.register', compact('kecamatan'));
+        $kecamatans = \App\Models\Kecamatan::orderBy('nama_kecamatan')->get();
+        return view('auth.company.register', compact('kecamatans'));
     }
 
     /**
@@ -36,7 +36,7 @@ class CompanyAuthController extends Controller
     public function register(RegisterCompanyRequest $request)
     {
         try {
-            // Upload logo perusahaan (WAJIB)
+            // Upload dan resize logo perusahaan (WAJIB, akan diresize jadi 200x200px)
             $logoPath = $this->imageService->uploadCompanyLogo($request->file('logo'));
 
             // Create company
@@ -56,15 +56,18 @@ class CompanyAuthController extends Controller
             // Log activity
             ActivityLog::createLog('company', $company->id_perusahaan, 'register', 'Company registered successfully');
 
-            // Auto login after registration
-            Auth::guard('company')->login($company);
-
-            return redirect()->route('company.dashboard')
-                           ->with('success', 'Registrasi berhasil! Akun Anda menunggu verifikasi admin.')
-                           ->with('info', 'Anda dapat mulai membuat lowongan, namun lowongan akan ditampilkan setelah akun terverifikasi.');
+            // Redirect ke halaman login dengan pesan sukses
+            return redirect()->route('company.login')
+                           ->with('success', 'Registrasi berhasil! Silakan login dengan akun Anda.')
+                           ->with('info', 'Akun Anda akan diverifikasi oleh admin sebelum dapat memposting lowongan.');
         } catch (\Exception $e) {
+            // Jika ada error, hapus logo yang sudah terupload (jika ada)
+            if (isset($logoPath) && $logoPath) {
+                $this->imageService->deleteImage($logoPath);
+            }
+
             return back()->with('error', 'Registrasi gagal: ' . $e->getMessage())
-                       ->withInput();
+                       ->withInput($request->except('password', 'password_confirmation'));
         }
     }
 

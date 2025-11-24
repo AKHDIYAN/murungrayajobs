@@ -12,13 +12,16 @@ use App\Http\Controllers\User\ApplicationController as UserApplicationController
 use App\Http\Controllers\Company\CompanyDashboardController;
 use App\Http\Controllers\Company\CompanyJobController;
 use App\Http\Controllers\Company\ApplicantController;
-use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminCompanyController;
 use App\Http\Controllers\Admin\AdminJobController;
 use App\Http\Controllers\Admin\AdminApplicationController;
 use App\Http\Controllers\Admin\AdminStatisticsController;
 use App\Http\Controllers\Admin\MasterDataController;
+use App\Http\Controllers\Auth\UserForgotPasswordController;
+use App\Http\Controllers\Auth\CompanyForgotPasswordController;
+use App\Http\Controllers\Auth\AdminForgotPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,6 +62,14 @@ Route::prefix('auth')->name('auth.')->group(function () {
     Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
 });
 
+// User Password Reset Routes
+Route::prefix('password')->name('user.password.')->group(function () {
+    Route::get('/forgot', [UserForgotPasswordController::class, 'showForgotForm'])->name('forgot');
+    Route::post('/email', [UserForgotPasswordController::class, 'sendResetLink'])->name('email');
+    Route::get('/reset/{token}', [UserForgotPasswordController::class, 'showResetForm'])->name('reset');
+    Route::post('/reset', [UserForgotPasswordController::class, 'resetPassword'])->name('update');
+});
+
 /*
 |--------------------------------------------------------------------------
 | User (Pelamar) Dashboard Routes
@@ -70,7 +81,7 @@ Route::prefix('user')->name('user.')->middleware(['user'])->group(function () {
     
     // Profile
     Route::get('/profile', [UserDashboardController::class, 'profile'])->name('profile');
-    Route::put('/profile', [UserDashboardController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/profile', [UserDashboardController::class, 'updateProfileNew'])->name('profile.update');
     
     // Applications
     Route::prefix('applications')->name('applications.')->group(function () {
@@ -81,6 +92,8 @@ Route::prefix('user')->name('user.')->middleware(['user'])->group(function () {
     
     // Settings
     Route::get('/settings', [UserDashboardController::class, 'settings'])->name('settings');
+    Route::put('/password', [UserDashboardController::class, 'updatePassword'])->name('password.update');
+    Route::put('/email', [UserDashboardController::class, 'updateEmail'])->name('email.update');
 });
 
 /*
@@ -89,17 +102,25 @@ Route::prefix('user')->name('user.')->middleware(['user'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('company/auth')->name('company.')->group(function () {
+Route::prefix('company/auth')->group(function () {
     // Registration
-    Route::get('/register', [CompanyAuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [CompanyAuthController::class, 'register'])->name('register.submit');
+    Route::get('/register', [CompanyAuthController::class, 'showRegisterForm'])->name('company.register');
+    Route::post('/register', [CompanyAuthController::class, 'register'])->name('company.register.submit');
     
     // Login
-    Route::get('/login', [CompanyAuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [CompanyAuthController::class, 'login'])->name('login.submit');
+    Route::get('/login', [CompanyAuthController::class, 'showLoginForm'])->name('company.login');
+    Route::post('/login', [CompanyAuthController::class, 'login'])->name('company.login.submit');
     
     // Logout
-    Route::post('/logout', [CompanyAuthController::class, 'logout'])->name('logout');
+    Route::post('/logout', [CompanyAuthController::class, 'logout'])->name('company.logout');
+});
+
+// Company Password Reset Routes
+Route::prefix('company/password')->name('company.password.')->group(function () {
+    Route::get('/forgot', [CompanyForgotPasswordController::class, 'showForgotForm'])->name('forgot');
+    Route::post('/email', [CompanyForgotPasswordController::class, 'sendResetLink'])->name('email');
+    Route::get('/reset/{token}', [CompanyForgotPasswordController::class, 'showResetForm'])->name('reset');
+    Route::post('/reset', [CompanyForgotPasswordController::class, 'resetPassword'])->name('update');
 });
 
 /*
@@ -108,7 +129,7 @@ Route::prefix('company/auth')->name('company.')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('company')->name('company.')->middleware(['company'])->group(function () {
+Route::prefix('company')->name('company.')->middleware(['company', 'check.job.expiry'])->group(function () {
     Route::get('/dashboard', [CompanyDashboardController::class, 'index'])->name('dashboard');
     
     // Jobs Management
@@ -137,6 +158,7 @@ Route::prefix('company')->name('company.')->middleware(['company'])->group(funct
     
     // Settings
     Route::get('/settings', [CompanyDashboardController::class, 'settings'])->name('settings');
+    Route::put('/settings/password', [CompanyDashboardController::class, 'updatePassword'])->name('settings.password.update');
 });
 
 /*
@@ -154,13 +176,21 @@ Route::prefix('admin/auth')->name('admin.')->group(function () {
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 });
 
+// Admin Password Reset Routes
+Route::prefix('admin/password')->name('admin.password.')->group(function () {
+    Route::get('/forgot', [AdminForgotPasswordController::class, 'showForgotForm'])->name('forgot');
+    Route::post('/email', [AdminForgotPasswordController::class, 'sendResetLink'])->name('email');
+    Route::get('/reset/{token}', [AdminForgotPasswordController::class, 'showResetForm'])->name('reset');
+    Route::post('/reset', [AdminForgotPasswordController::class, 'resetPassword'])->name('update');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Admin Dashboard Routes
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('admin')->name('admin.')->middleware(['admin'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['admin', 'admin.logger'])->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     
     // User Management
@@ -181,7 +211,8 @@ Route::prefix('admin')->name('admin.')->middleware(['admin'])->group(function ()
         Route::get('/{id}/edit', [AdminCompanyController::class, 'edit'])->name('edit');
         Route::put('/{id}', [AdminCompanyController::class, 'update'])->name('update');
         Route::delete('/{id}', [AdminCompanyController::class, 'destroy'])->name('destroy');
-        Route::put('/{id}/verify', [AdminCompanyController::class, 'verify'])->name('verify');
+        Route::post('/{id}/verify', [AdminCompanyController::class, 'verify'])->name('verify');
+        Route::post('/{id}/unverify', [AdminCompanyController::class, 'unverify'])->name('unverify');
         Route::put('/{id}/suspend', [AdminCompanyController::class, 'suspend'])->name('suspend');
     });
     
@@ -217,13 +248,15 @@ Route::prefix('admin')->name('admin.')->middleware(['admin'])->group(function ()
     
     // Statistics Management
     Route::prefix('statistics')->name('statistics.')->group(function () {
-        Route::get('/', [AdminStatisticsController::class, 'index'])->name('index');
-        Route::get('/create', [AdminStatisticsController::class, 'create'])->name('create');
-        Route::post('/', [AdminStatisticsController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [AdminStatisticsController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [AdminStatisticsController::class, 'update'])->name('update');
-        Route::delete('/{id}', [AdminStatisticsController::class, 'destroy'])->name('destroy');
+        Route::get('/', [AdminStatisticsController::class, 'dashboard'])->name('index');
+        Route::get('/data', [AdminStatisticsController::class, 'dataIndex'])->name('data.index');
+        Route::get('/data/create', [AdminStatisticsController::class, 'create'])->name('create');
+        Route::post('/data', [AdminStatisticsController::class, 'store'])->name('store');
+        Route::get('/data/{id}/edit', [AdminStatisticsController::class, 'edit'])->name('edit');
+        Route::put('/data/{id}', [AdminStatisticsController::class, 'update'])->name('update');
+        Route::delete('/data/{id}', [AdminStatisticsController::class, 'destroy'])->name('destroy');
         Route::post('/import', [AdminStatisticsController::class, 'import'])->name('import');
+        Route::get('/download-template', [AdminStatisticsController::class, 'downloadTemplate'])->name('download-template');
         Route::get('/export-excel', [AdminStatisticsController::class, 'exportExcel'])->name('export-excel');
         Route::get('/export-pdf', [AdminStatisticsController::class, 'exportPDF'])->name('export-pdf');
     });
@@ -264,7 +297,13 @@ Route::prefix('admin')->name('admin.')->middleware(['admin'])->group(function ()
     });
     
     // Activity Logs
-    Route::get('/logs', [AdminDashboardController::class, 'activityLogs'])->name('logs');
+    Route::prefix('logs')->name('logs.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\AdminLogsController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Admin\AdminLogsController::class, 'show'])->name('show');
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\AdminLogsController::class, 'destroy'])->name('destroy');
+        Route::post('/clear', [\App\Http\Controllers\Admin\AdminLogsController::class, 'clear'])->name('clear');
+    });
+    Route::get('/logs', [\App\Http\Controllers\Admin\AdminLogsController::class, 'index'])->name('logs');
     
     // System Settings
     Route::get('/settings', [AdminDashboardController::class, 'settings'])->name('settings');

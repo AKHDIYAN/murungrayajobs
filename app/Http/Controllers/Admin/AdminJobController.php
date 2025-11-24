@@ -26,21 +26,16 @@ class AdminJobController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Pekerjaan::with(['perusahaan', 'kecamatan', 'kategori']);
+        $query = Pekerjaan::with(['perusahaan', 'kecamatan', 'kategori', 'lamaran']);
 
         // Search
         if ($request->filled('search')) {
-            $query->search($request->search);
+            $query->where('nama_pekerjaan', 'like', '%' . $request->search . '%');
         }
 
         // Filter by company
         if ($request->filled('company')) {
             $query->where('id_perusahaan', $request->company);
-        }
-
-        // Filter by kecamatan
-        if ($request->filled('kecamatan')) {
-            $query->where('id_kecamatan', $request->kecamatan);
         }
 
         // Filter by kategori
@@ -50,23 +45,30 @@ class AdminJobController extends Controller
 
         // Filter by status
         if ($request->filled('status')) {
-            if ($request->status === 'aktif') {
-                $query->aktif();
-            } elseif ($request->status === 'berakhir') {
-                $query->berakhir();
-            } else {
-                $query->where('status', $request->status);
-            }
+            $query->where('status', $request->status);
         }
 
         $jobs = $query->orderBy('tanggal_posting', 'desc')
                      ->paginate(15)
                      ->withQueryString();
 
-        $kecamatanList = Kecamatan::all();
-        $kategoriList = Sektor::all();
+        // Get company list and sektor list for filters
+        $companyList = \App\Models\Perusahaan::orderBy('nama_perusahaan')->get();
+        $sektorList = Sektor::orderBy('nama_kategori')->get();
 
-        return view('admin.jobs.index', compact('jobs', 'kecamatanList', 'kategoriList'));
+        // Calculate statistics
+        $pendingCount = Pekerjaan::where('status', 'Pending')->count();
+        $acceptedCount = Pekerjaan::where('status', 'Diterima')->count();
+        $totalApplicants = \App\Models\Lamaran::count();
+
+        return view('admin.jobs.index', compact(
+            'jobs',
+            'companyList',
+            'sektorList',
+            'pendingCount',
+            'acceptedCount',
+            'totalApplicants'
+        ));
     }
 
     /**
@@ -97,11 +99,9 @@ class AdminJobController extends Controller
      */
     public function edit($id)
     {
-        $job = Pekerjaan::with('perusahaan')->findOrFail($id);
-        $kecamatanList = Kecamatan::all();
-        $kategoriList = Sektor::all();
+        $job = Pekerjaan::with(['perusahaan', 'kecamatan', 'kategori'])->findOrFail($id);
 
-        return view('admin.jobs.edit', compact('job', 'kecamatanList', 'kategoriList'));
+        return view('admin.jobs.edit', compact('job'));
     }
 
     /**
@@ -110,25 +110,22 @@ class AdminJobController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'nama_pekerjaan' => 'required|string|max:255',
-            'id_kecamatan' => 'required|exists:kecamatan,id_kecamatan',
-            'id_kategori' => 'required|exists:sektor,id_sektor',
-            'gaji_min' => 'required|numeric|min:0',
-            'gaji_max' => 'required|numeric|min:0|gte:gaji_min',
-            'deskripsi_pekerjaan' => 'required|string',
-            'persyaratan_pekerjaan' => 'required|string',
-            'jumlah_lowongan' => 'required|integer|min:1',
-            'jenis_pekerjaan' => 'required|in:Full-Time,Part-Time,Kontrak',
-            'tanggal_expired' => 'required|date|after_or_equal:today',
+            'tanggal_expired' => 'required|date',
             'status' => 'required|in:Diterima,Pending,Ditolak',
+            'catatan_admin' => 'nullable|string',
         ]);
 
         try {
-            $this->jobService->updateJob($id, $request->all());
+            $job = Pekerjaan::findOrFail($id);
+            
+            $job->update([
+                'tanggal_expired' => $request->tanggal_expired,
+                'status' => $request->status,
+                'catatan_admin' => $request->catatan_admin,
+            ]);
 
             // Log activity
             $admin = Auth::guard('admin')->user();
-            $job = Pekerjaan::find($id);
             ActivityLog::createLog('admin', $admin->id_admin, 'update', 'Updated job: ' . $job->nama_pekerjaan);
 
             return redirect()->route('admin.jobs.show', $id)

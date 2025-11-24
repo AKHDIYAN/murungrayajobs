@@ -110,12 +110,10 @@ class CompanyDashboardController extends Controller
                 );
             }
 
-            // Handle password update
-            if ($request->filled('password')) {
-                $data['password'] = Hash::make($request->password);
-            } else {
-                unset($data['password']);
-            }
+            // Remove fields that should not be updated
+            unset($data['username']);
+            unset($data['nama_perusahaan']);
+            unset($data['password']);
 
             // Update company
             /** @var \App\Models\Perusahaan $company */
@@ -135,5 +133,40 @@ class CompanyDashboardController extends Controller
     {
         $company = Auth::guard('company')->user();
         return view('company.settings', compact('company'));
+    }
+
+    /**
+     * Update password
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'password.required' => 'Password baru wajib diisi.',
+            'password.min' => 'Password baru minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+        ]);
+
+        try {
+            $company = Auth::guard('company')->user();
+
+            // Check if current password is correct
+            if (!Hash::check($request->current_password, $company->password)) {
+                return back()->withErrors([
+                    'current_password' => 'Password saat ini tidak sesuai.'
+                ])->withInput();
+            }
+
+            // Update password
+            $company->password = Hash::make($request->password);
+            $company->save();
+
+            return back()->with('success', 'Password berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui password: ' . $e->getMessage());
+        }
     }
 }

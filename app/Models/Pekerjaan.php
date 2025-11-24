@@ -28,6 +28,7 @@ class Pekerjaan extends Model
         'jenis_pekerjaan',
         'tanggal_expired',
         'status',
+        'catatan_admin',
     ];
 
     protected $casts = [

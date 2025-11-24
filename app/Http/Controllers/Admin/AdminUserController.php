@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Kecamatan;
+use App\Models\Pendidikan;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,16 +22,14 @@ class AdminUserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::with('kecamatan');
+        $query = User::with(['kecamatan', 'pendidikan', 'lamaran']);
 
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama', 'LIKE', "%{$search}%")
-                  ->orWhere('username', 'LIKE', "%{$search}%")
-                  ->orWhere('email', 'LIKE', "%{$search}%")
-                  ->orWhere('nik', 'LIKE', "%{$search}%");
+                  ->orWhere('email', 'LIKE', "%{$search}%");
             });
         }
 
@@ -39,18 +38,35 @@ class AdminUserController extends Controller
             $query->where('id_kecamatan', $request->kecamatan);
         }
 
-        // Filter by gender
-        if ($request->filled('gender')) {
-            $query->where('jenis_kelamin', $request->gender);
+        // Filter by pendidikan
+        if ($request->filled('pendidikan')) {
+            $query->where('id_pendidikan', $request->pendidikan);
         }
 
-        $users = $query->orderBy('tanggal_registrasi', 'desc')
+        $users = $query->orderBy('created_at', 'desc')
                       ->paginate(15)
                       ->withQueryString();
 
         $kecamatanList = Kecamatan::all();
+        $pendidikanList = Pendidikan::all();
 
-        return view('admin.users.index', compact('users', 'kecamatanList'));
+        // Statistics
+        $activeApplicants = User::whereHas('lamaran')->count();
+        $newThisMonth = User::whereMonth('created_at', date('m'))
+                           ->whereYear('created_at', date('Y'))
+                           ->count();
+        $verifiedUsers = User::whereNotNull('nik')
+                            ->whereNotNull('no_telepon')
+                            ->count();
+
+        return view('admin.users.index', compact(
+            'users', 
+            'kecamatanList', 
+            'pendidikanList',
+            'activeApplicants',
+            'newThisMonth',
+            'verifiedUsers'
+        ));
     }
 
     /**
@@ -83,8 +99,9 @@ class AdminUserController extends Controller
     {
         $user = User::findOrFail($id);
         $kecamatanList = Kecamatan::all();
+        $pendidikanList = Pendidikan::all();
 
-        return view('admin.users.edit', compact('user', 'kecamatanList'));
+        return view('admin.users.edit', compact('user', 'kecamatanList', 'pendidikanList'));
     }
 
     /**
@@ -95,14 +112,28 @@ class AdminUserController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'email' => 'required|email|unique:user,email,' . $id . ',id_user',
-            'no_telepon' => 'required|string|min:10|max:15',
-            'alamat' => 'required|string',
-            'id_kecamatan' => 'required|exists:kecamatan,id_kecamatan',
+            'no_telepon' => 'nullable|string|min:10|max:15',
+            'nik' => 'nullable|string|size:16',
+            'alamat' => 'nullable|string',
+            'id_kecamatan' => 'nullable|exists:kecamatan,id_kecamatan',
+            'id_pendidikan' => 'nullable|exists:pendidikan,id_pendidikan',
+            'jenis_kelamin' => 'nullable|in:Laki-laki,Perempuan',
+            'tanggal_lahir' => 'nullable|date',
         ]);
 
         try {
             $user = User::findOrFail($id);
-            $user->update($request->only(['nama', 'email', 'no_telepon', 'alamat', 'id_kecamatan']));
+            $user->update($request->only([
+                'nama', 
+                'email', 
+                'no_telepon', 
+                'nik',
+                'alamat', 
+                'id_kecamatan',
+                'id_pendidikan',
+                'jenis_kelamin',
+                'tanggal_lahir'
+            ]));
 
             // Log activity
             $admin = Auth::guard('admin')->user();

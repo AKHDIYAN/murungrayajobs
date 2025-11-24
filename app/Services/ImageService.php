@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Exception;
@@ -19,18 +18,12 @@ class ImageService
     public function uploadUserPhoto($file)
     {
         try {
-            $filename = 'user_' . Str::random(20) . '_' . time() . '.jpg';
+            $extension = $file->getClientOriginalExtension();
+            $filename = 'user_' . Str::random(20) . '_' . time() . '.' . $extension;
             $path = 'uploads/foto/' . $filename;
             
-            // Resize dan optimize image
-            $image = Image::make($file)
-                         ->resize(300, 400, function ($constraint) {
-                             $constraint->aspectRatio();
-                             $constraint->upsize();
-                         })
-                         ->encode('jpg', 80);
-            
-            Storage::disk('public')->put($path, $image);
+            // Upload file directly without resize
+            $file->storeAs('public/' . dirname($path), basename($path));
             
             return $path;
         } catch (Exception $e) {
@@ -48,18 +41,12 @@ class ImageService
     public function uploadCompanyLogo($file)
     {
         try {
-            $filename = 'logo_' . Str::random(20) . '_' . time() . '.jpg';
+            $extension = $file->getClientOriginalExtension();
+            $filename = 'logo_' . Str::random(20) . '_' . time() . '.' . $extension;
             $path = 'uploads/logos/' . $filename;
             
-            // Resize dan optimize image
-            $image = Image::make($file)
-                         ->resize(200, 200, function ($constraint) {
-                             $constraint->aspectRatio();
-                             $constraint->upsize();
-                         })
-                         ->encode('jpg', 85);
-            
-            Storage::disk('public')->put($path, $image);
+            // Upload file directly without resize
+            $file->storeAs('public/' . dirname($path), basename($path));
             
             return $path;
         } catch (Exception $e) {

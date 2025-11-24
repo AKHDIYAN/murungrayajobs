@@ -5,26 +5,58 @@ namespace App\Http\Controllers;
 use App\Models\Pekerjaan;
 use App\Models\Kecamatan;
 use App\Models\Sektor;
+use App\Models\Pendidikan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class JobController extends Controller
 {
     /**
-     * Job listing page
+     * Job listing page with advanced filtering
      */
     public function index(Request $request)
     {
         $query = Pekerjaan::with(['perusahaan', 'kecamatan', 'kategori'])
-                          ->aktif();
+                          ->where('status', 'Diterima')
+                          ->where('tanggal_expired', '>=', now());
 
-        // Filter by kecamatan
-        if ($request->filled('kecamatan')) {
-            $query->where('id_kecamatan', $request->kecamatan);
+        // Get total active jobs for hero section
+        $totalJobs = Pekerjaan::where('status', 'Diterima')
+                              ->where('tanggal_expired', '>=', now())
+                              ->count();
+
+        // Search by keyword (nama pekerjaan, nama perusahaan, deskripsi)
+        if ($request->filled('keyword')) {
+            $keyword = $request->keyword;
+            $query->where(function($q) use ($keyword) {
+                $q->where('nama_pekerjaan', 'LIKE', "%{$keyword}%")
+                  ->orWhere('nama_perusahaan', 'LIKE', "%{$keyword}%")
+                  ->orWhere('deskripsi_pekerjaan', 'LIKE', "%{$keyword}%");
+            });
         }
 
-        // Filter by kategori
-        if ($request->filled('kategori')) {
-            $query->where('id_kategori', $request->kategori);
+        // Filter by kecamatan (support both ID and slug)
+        if ($request->filled('kecamatan')) {
+            $kecamatanInput = $request->kecamatan;
+            
+            // Check if input is numeric (ID) or string (slug)
+            if (is_numeric($kecamatanInput)) {
+                $query->where('id_kecamatan', $kecamatanInput);
+            } else {
+                // Convert slug to title case and find kecamatan
+                $kecamatanName = str_replace('-', ' ', $kecamatanInput);
+                $kecamatanName = ucwords($kecamatanName);
+                
+                $kecamatan = Kecamatan::where('nama_kecamatan', 'LIKE', "%{$kecamatanName}%")->first();
+                if ($kecamatan) {
+                    $query->where('id_kecamatan', $kecamatan->id_kecamatan);
+                }
+            }
+        }
+
+        // Filter by sektor
+        if ($request->filled('sektor')) {
+            $query->where('id_kategori', $request->sektor);
         }
 
         // Filter by jenis pekerjaan
@@ -32,35 +64,48 @@ class JobController extends Controller
             $query->where('jenis_pekerjaan', $request->jenis);
         }
 
-        // Search
-        if ($request->filled('search')) {
-            $query->search($request->search);
+        // Filter by salary range
+        if ($request->filled('min_gaji')) {
+            $query->where('gaji_max', '>=', $request->min_gaji);
+        }
+        if ($request->filled('max_gaji')) {
+            $query->where('gaji_min', '<=', $request->max_gaji);
         }
 
-        // Sort
-        $sortBy = $request->get('sort', 'latest');
+        // Sorting
+        $sortBy = $request->get('sort', 'terbaru');
         switch ($sortBy) {
-            case 'latest':
-                $query->orderBy('tanggal_posting', 'desc');
+            case 'terbaru':
+                $query->orderBy('created_at', 'desc');
                 break;
-            case 'oldest':
-                $query->orderBy('tanggal_posting', 'asc');
-                break;
-            case 'salary_high':
+            case 'gaji_tertinggi':
                 $query->orderBy('gaji_max', 'desc');
                 break;
-            case 'salary_low':
+            case 'gaji_terendah':
                 $query->orderBy('gaji_min', 'asc');
                 break;
+            case 'paling_diminati':
+                $query->withCount('lamaran')
+                      ->orderBy('lamaran_count', 'desc');
+                break;
+            default:
+                $query->orderBy('created_at', 'desc');
         }
 
-        $jobs = $query->paginate(12)->withQueryString();
+        $jobs = $query->paginate(20)->withQueryString();
 
-        // For filters
-        $kecamatanList = Kecamatan::all();
-        $kategoriList = Sektor::all();
+        // Load filter data
+        $kecamatans = Kecamatan::orderBy('nama_kecamatan')->get();
+        $sektors = Sektor::orderBy('nama_kategori')->get();
+        $pendidikans = Pendidikan::orderBy('id_pendidikan')->get();
 
-        return view('jobs.index', compact('jobs', 'kecamatanList', 'kategoriList'));
+        return view('jobs.index', compact(
+            'jobs',
+            'totalJobs',
+            'kecamatans',
+            'sektors',
+            'pendidikans'
+        ));
     }
 
     /**

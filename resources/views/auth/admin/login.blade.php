@@ -6,20 +6,7 @@
     <title>Admin Login - Portal Kerja Murung Raya</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .login-card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/admin-login.css') }}">
 </head>
 <body>
     <div class="container">
@@ -61,11 +48,16 @@
                             @enderror
                         </div>
 
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                            <label class="form-check-label" for="remember">
-                                Ingat Saya
-                            </label>
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                                <label class="form-check-label" for="remember">
+                                    Ingat Saya
+                                </label>
+                            </div>
+                            <a href="{{ route('admin.password.forgot') }}" class="text-primary small">
+                                Lupa Password?
+                            </a>
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100">

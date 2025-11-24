@@ -18,7 +18,7 @@ class UserMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (!Auth::guard('web')->check()) {
-            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu');
+            return redirect()->route('auth.login')->with('error', 'Silakan login terlebih dahulu');
         }
 
         return $next($request);

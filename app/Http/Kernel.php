@@ -71,5 +71,6 @@ class Kernel extends HttpKernel
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
         'check.job.expiry' => \App\Http\Middleware\CheckJobExpiry::class,
         'log.activity' => \App\Http\Middleware\LogActivity::class,
+        'admin.logger' => \App\Http\Middleware\AdminActivityLogger::class,
     ];
 }

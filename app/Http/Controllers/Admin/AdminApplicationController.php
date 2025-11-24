@@ -69,7 +69,25 @@ class AdminApplicationController extends Controller
                              ->paginate(15)
                              ->withQueryString();
 
-        return view('admin.applications.index', compact('applications'));
+        // Get company list and job list for filters
+        $companyList = \App\Models\Perusahaan::orderBy('nama_perusahaan')->get();
+        $jobList = Pekerjaan::with('perusahaan')->orderBy('nama_pekerjaan')->get();
+
+        // Calculate statistics
+        $totalApplications = Lamaran::count();
+        $pendingCount = Lamaran::where('status', 'Pending')->count();
+        $acceptedCount = Lamaran::where('status', 'Diterima')->count();
+        $rejectedCount = Lamaran::where('status', 'Ditolak')->count();
+
+        return view('admin.applications.index', compact(
+            'applications',
+            'companyList',
+            'jobList',
+            'totalApplications',
+            'pendingCount',
+            'acceptedCount',
+            'rejectedCount'
+        ));
     }
 
     /**

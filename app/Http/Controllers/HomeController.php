@@ -53,11 +53,23 @@ class HomeController extends Controller
      */
     public function map()
     {
-        $kecamatan = Kecamatan::with(['pekerjaan' => function($q) {
-            $q->aktif();
-        }])->get();
+        // Get kecamatan with job counts (menggunakan status 'Diterima' dan tanggal tidak expired)
+        $kecamatanStats = Kecamatan::leftJoin('pekerjaan', function($join) {
+                $join->on('kecamatan.id_kecamatan', '=', 'pekerjaan.id_kecamatan')
+                     ->where('pekerjaan.status', '=', 'Diterima')
+                     ->whereDate('pekerjaan.tanggal_expired', '>=', \Carbon\Carbon::today());
+            })
+            ->selectRaw('kecamatan.id_kecamatan, kecamatan.nama_kecamatan, COUNT(pekerjaan.id_pekerjaan) as total')
+            ->groupBy('kecamatan.id_kecamatan', 'kecamatan.nama_kecamatan')
+            ->get();
 
-        return view('map', compact('kecamatan'));
+        // Total lowongan aktif
+        $totalLowongan = Pekerjaan::aktif()->count();
+
+        // Kecamatan dengan lowongan terbanyak
+        $kecamatanTerbanyak = $kecamatanStats->sortByDesc('total')->first();
+
+        return view('map', compact('kecamatanStats', 'totalLowongan', 'kecamatanTerbanyak'));
     }
 
     /**
