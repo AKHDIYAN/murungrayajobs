@@ -17,3 +17,9 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# Documentation files (keep local, not in repo)
+*_DOCUMENTATION.md
+*_TESTING.md
+*_SUMMARY.md
+OPTIMIZATION_*.md
