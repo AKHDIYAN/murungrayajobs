@@ -213,6 +213,7 @@
     <!-- Footer -->
     <div class="footer">
         <p><strong>Dinas Tenaga Kerja dan Transmigrasi Kabupaten Murung Raya</strong></p>
+        <p>Komp. Bupati Murung Raya, Beriwit, Kec. Murung, Kabupaten Murung Raya, Kalimantan Tengah 73911</p>
         <p>Dokumen ini dibuat secara otomatis oleh Sistem Informasi Ketenagakerjaan</p>
     </div>
 </body>
