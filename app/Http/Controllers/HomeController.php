@@ -59,17 +59,42 @@ class HomeController extends Controller
                      ->where('pekerjaan.status', '=', 'Diterima')
                      ->whereDate('pekerjaan.tanggal_expired', '>=', \Carbon\Carbon::today());
             })
-            ->selectRaw('kecamatan.id_kecamatan, kecamatan.nama_kecamatan, COUNT(pekerjaan.id_pekerjaan) as total')
-            ->groupBy('kecamatan.id_kecamatan', 'kecamatan.nama_kecamatan')
-            ->get();
+            ->leftJoin('user', 'kecamatan.id_kecamatan', '=', 'user.id_kecamatan')
+            ->selectRaw('
+                kecamatan.id_kecamatan, 
+                kecamatan.nama_kecamatan, 
+                kecamatan.slug,
+                COUNT(DISTINCT pekerjaan.id_pekerjaan) as total_lowongan,
+                COUNT(DISTINCT user.id_user) as total_pencari_kerja,
+                SUM(CASE WHEN user.status_kerja = "Menganggur" THEN 1 ELSE 0 END) as total_menganggur,
+                SUM(CASE WHEN user.status_kerja = "Bekerja" THEN 1 ELSE 0 END) as total_bekerja
+            ')
+            ->groupBy('kecamatan.id_kecamatan', 'kecamatan.nama_kecamatan', 'kecamatan.slug')
+            ->get()
+            ->map(function($item) {
+                $item->tingkat_pengangguran = $item->total_pencari_kerja > 0 
+                    ? round(($item->total_menganggur / $item->total_pencari_kerja) * 100, 1)
+                    : 0;
+                return $item;
+            });
 
         // Total lowongan aktif
         $totalLowongan = Pekerjaan::aktif()->count();
+        
+        // Total pencari kerja
+        $totalPencariKerja = User::count();
+        $totalMenganggur = User::where('status_kerja', 'Menganggur')->count();
 
         // Kecamatan dengan lowongan terbanyak
-        $kecamatanTerbanyak = $kecamatanStats->sortByDesc('total')->first();
+        $kecamatanTerbanyak = $kecamatanStats->sortByDesc('total_lowongan')->first();
 
-        return view('map', compact('kecamatanStats', 'totalLowongan', 'kecamatanTerbanyak'));
+        return view('map', compact(
+            'kecamatanStats', 
+            'totalLowongan', 
+            'totalPencariKerja',
+            'totalMenganggur',
+            'kecamatanTerbanyak'
+        ));
     }
 
     /**

@@ -31,6 +31,13 @@ class User extends Authenticatable
         'ktp',
         'sertifikat',
         'foto_diri',
+        // New workforce data fields
+        'status_kerja',
+        'pekerjaan_saat_ini',
+        'pengalaman_kerja',
+        'jenis_sertifikasi',
+        'skills',
+        'sertifikat_verified',
     ];
 
     protected $hidden = [
@@ -41,6 +48,9 @@ class User extends Authenticatable
     protected $casts = [
         'tanggal_lahir' => 'date',
         'tanggal_registrasi' => 'datetime',
+        'jenis_sertifikasi' => 'array',
+        'skills' => 'array',
+        'sertifikat_verified' => 'boolean',
     ];
 
     // Relationships
@@ -62,6 +72,18 @@ class User extends Authenticatable
     public function lamaran()
     {
         return $this->hasMany(Lamaran::class, 'id_user', 'id_user');
+    }
+
+    public function pelatihanPeserta()
+    {
+        return $this->hasMany(PelatihanPeserta::class, 'id_user', 'id_user');
+    }
+
+    public function pelatihanDiikuti()
+    {
+        return $this->belongsToMany(Pelatihan::class, 'pelatihan_peserta', 'id_user', 'id_pelatihan')
+                    ->withPivot('status_pendaftaran', 'lulus', 'nomor_sertifikat')
+                    ->withTimestamps();
     }
 
     // Accessors

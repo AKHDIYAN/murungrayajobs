@@ -43,6 +43,13 @@ Route::get('/map', [HomeController::class, 'map'])->name('map');
 // Statistics (Public)
 Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics.index');
 
+// Training/Pelatihan (Public)
+Route::prefix('pelatihan')->name('pelatihan.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\PelatihanController::class, 'index'])->name('index');
+    Route::get('/{id}', [\App\Http\Controllers\PelatihanController::class, 'show'])->name('show');
+    Route::post('/{id}/daftar', [\App\Http\Controllers\PelatihanController::class, 'daftar'])->name('daftar');
+});
+
 /*
 |--------------------------------------------------------------------------
 | User (Pelamar) Authentication Routes
@@ -304,6 +311,25 @@ Route::prefix('admin')->name('admin.')->middleware(['admin', 'admin.logger'])->g
         Route::post('/clear', [\App\Http\Controllers\Admin\AdminLogsController::class, 'clear'])->name('clear');
     });
     Route::get('/logs', [\App\Http\Controllers\Admin\AdminLogsController::class, 'index'])->name('logs');
+    
+    // DSS - Decision Support System
+    Route::prefix('dss')->name('dss.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\DSSController::class, 'index'])->name('index');
+        Route::get('/export', [\App\Http\Controllers\Admin\DSSController::class, 'export'])->name('export');
+    });
+    
+    // Training Management
+    Route::prefix('pelatihan')->name('pelatihan.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'store'])->name('store');
+        Route::get('/{id}', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'update'])->name('update');
+        Route::delete('/{id}', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/peserta/{pesertaId}/approve', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'approvePeserta'])->name('peserta.approve');
+        Route::post('/{id}/peserta/{pesertaId}/reject', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'rejectPeserta'])->name('peserta.reject');
+    });
     
     // System Settings
     Route::get('/settings', [AdminDashboardController::class, 'settings'])->name('settings');
