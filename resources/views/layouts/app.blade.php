@@ -372,6 +372,9 @@
         </div>
     </footer>
 
+    <!-- Animation Script -->
+    <script src="{{ asset('js/animations.js') }}"></script>
+
     <!-- Page-specific scripts -->
     @stack('scripts')
 </body>

@@ -2,9 +2,243 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom tambahan kalau mau */
-@layer components {
-  .btn-primary {
-    @apply bg-blue-600 text-white font-bold py-3 px-8 rounded-full hover:bg-blue-700 transition;
+/* ========================================
+   ANIMATIONS & TRANSITIONS
+   ======================================== */
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Animation Classes */
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.7s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.7s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.5s ease-out forwards;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce 2s ease-in-out infinite;
+}
+
+/* Delay Classes for Staggered Animations */
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.delay-400 {
+  animation-delay: 0.4s;
+}
+
+.delay-500 {
+  animation-delay: 0.5s;
+}
+
+/* ========================================
+   CUSTOM COMPONENTS
+   ======================================== */
+
+@layer components {
+  /* Buttons with Smooth Transitions */
+  .btn-primary {
+    @apply bg-blue-600 text-white font-bold py-3 px-8 rounded-full hover:bg-blue-700 
+           transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-xl;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-600 text-white font-bold py-3 px-8 rounded-full hover:bg-gray-700 
+           transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-xl;
+  }
+
+  .btn-success {
+    @apply bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 
+           transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 
+           transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg;
+  }
+
+  /* Card with Hover Effect */
+  .card-hover {
+    @apply transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl;
+  }
+
+  .card-hover-subtle {
+    @apply transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1;
+  }
+
+  /* Link with Smooth Transition */
+  .link-animated {
+    @apply transition-all duration-200 ease-in-out hover:text-blue-600 hover:underline;
+  }
+
+  /* Input Focus Effect */
+  .input-animated {
+    @apply transition-all duration-200 ease-in-out focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  }
+
+  /* Navigation Link with Underline Animation */
+  .nav-link-animated {
+    @apply relative transition-colors duration-200 ease-in-out;
+  }
+
+  .nav-link-animated::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 ease-in-out;
+  }
+
+  .nav-link-animated:hover::after {
+    @apply w-full;
+  }
+
+  /* Smooth Scroll */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Loading Spinner */
+  .spinner {
+    @apply animate-spin rounded-full border-4 border-gray-200 border-t-blue-600;
+  }
+
+  /* Skeleton Loading */
+  .skeleton {
+    @apply bg-gray-200 rounded animate-pulse;
+  }
+
+  /* Badge with Pulse */
+  .badge-pulse {
+    @apply relative;
+  }
+
+  .badge-pulse::before {
+    content: '';
+    @apply absolute inset-0 rounded-full animate-ping bg-current opacity-75;
+  }
+
+  /* Dropdown Transition */
+  .dropdown-enter {
+    @apply transition-all duration-200 ease-out transform origin-top;
+  }
+
+  /* Modal Transition */
+  .modal-enter {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .modal-backdrop {
+    @apply transition-opacity duration-300 ease-in-out;
+  }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Smooth Transitions for All Interactive Elements */
+button, a, input, select, textarea {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+/* Remove transition for specific elements if needed */
+.no-transition {
+  transition: none !important;
 }
