@@ -27,20 +27,20 @@ class DSSController extends Controller
         // 1. Supply vs Demand per Sektor
         $supplyDemandPerSektor = Sektor::leftJoin('pekerjaan', function($join) {
                 $join->on('sektor.id_sektor', '=', 'pekerjaan.id_kategori')
-                     ->where('pekerjaan.status', 'Diterima')
+                     ->where('pekerjaan.status', '=', 'Diterima')
                      ->whereDate('pekerjaan.tanggal_expired', '>=', now());
             })
-            ->leftJoin('user', 'user.id_pendidikan', '=', 'sektor.id_sektor') // Simplified mapping
             ->select(
                 'sektor.id_sektor',
-                'sektor.nama_sektor',
+                'sektor.nama_kategori',
                 DB::raw('COUNT(DISTINCT pekerjaan.id_pekerjaan) as demand_lowongan'),
-                DB::raw('SUM(pekerjaan.jumlah_lowongan) as demand_total'),
-                DB::raw('COUNT(DISTINCT user.id_user) as supply_pencari_kerja')
+                DB::raw('COALESCE(SUM(pekerjaan.jumlah_lowongan), 0) as demand_total')
             )
-            ->groupBy('sektor.id_sektor', 'sektor.nama_sektor')
+            ->groupBy('sektor.id_sektor', 'sektor.nama_kategori')
             ->get()
             ->map(function($item) {
+                // Count pencari kerja (all unemployed users as general supply)
+                $item->supply_pencari_kerja = User::where('status_kerja', 'Menganggur')->count();
                 $item->gap = $item->supply_pencari_kerja - $item->demand_total;
                 $item->gap_status = $item->gap > 0 ? 'Surplus' : 'Defisit';
                 return $item;
@@ -66,9 +66,10 @@ class DSSController extends Controller
 
         // 3. Job Absorption Rate (Tingkat Serapan)
         $totalLowongan = Pekerjaan::aktif()->sum('jumlah_lowongan');
-        $totalPelamar = Lamaran::count();
+        $totalPelamar = User::count(); // Total user/pencari kerja terdaftar
+        $totalLamaran = Lamaran::count(); // Total lamaran yang diajukan
         $totalDiterima = Lamaran::where('status', 'Diterima')->count();
-        $tingkatSerapan = $totalPelamar > 0 ? round(($totalDiterima / $totalPelamar) * 100, 2) : 0;
+        $tingkatSerapan = $totalLamaran > 0 ? round(($totalDiterima / $totalLamaran) * 100, 2) : 0;
 
         // 4. Skills Gap - Most Needed vs Available
         $skillsDemand = Pekerjaan::aktif()
@@ -110,29 +111,50 @@ class DSSController extends Controller
             ->sortByDesc('rekomendasi_pelatihan');
 
         // 6. Certification Status
-        $sertifikasiStats = [
-            'total_user' => User::count(),
-            'tersertifikasi' => User::where('sertifikat_verified', true)->count(),
-            'belum_sertifikasi' => User::where('sertifikat_verified', false)->orWhereNull('sertifikat')->count(),
+        $totalUser = User::count();
+        $totalBersertifikat = User::whereNotNull('jenis_sertifikasi')->count();
+        $totalVerified = User::where('sertifikat_verified', true)->count();
+        
+        $sertifikasiStats = (object) [
+            'total_user' => $totalUser,
+            'total_bersertifikat' => $totalBersertifikat,
+            'total_verified' => $totalVerified,
+            'persentase_coverage' => $totalUser > 0 ? round(($totalBersertifikat / $totalUser) * 100, 2) : 0,
         ];
-        $sertifikasiStats['persentase_sertifikasi'] = $sertifikasiStats['total_user'] > 0
-            ? round(($sertifikasiStats['tersertifikasi'] / $sertifikasiStats['total_user']) * 100, 2)
-            : 0;
 
         // 7. Age Demographics
-        $demografiUsia = User::select(
-                DB::raw('CASE 
-                    WHEN TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) BETWEEN 18 AND 25 THEN "18-25"
-                    WHEN TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) BETWEEN 26 AND 35 THEN "26-35"
-                    WHEN TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) BETWEEN 36 AND 45 THEN "36-45"
-                    WHEN TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) > 45 THEN "46+"
-                    ELSE "Unknown"
-                END as kelompok_usia'),
-                DB::raw('COUNT(*) as jumlah')
-            )
-            ->whereNotNull('tanggal_lahir')
-            ->groupBy('kelompok_usia')
-            ->get();
+        $demografiUsia = collect([
+            (object)['kelompok_usia' => '18-25', 'jumlah' => 0],
+            (object)['kelompok_usia' => '26-35', 'jumlah' => 0],
+            (object)['kelompok_usia' => '36-45', 'jumlah' => 0],
+            (object)['kelompok_usia' => '46+', 'jumlah' => 0],
+        ]);
+
+        $usiaData = User::all()
+            ->groupBy(function($user) {
+                if (!$user->tanggal_lahir) {
+                    return '18-25'; // Default untuk user tanpa tanggal lahir
+                }
+                
+                try {
+                    $umur = \Carbon\Carbon::parse($user->tanggal_lahir)->age;
+                    if ($umur >= 18 && $umur <= 25) return '18-25';
+                    if ($umur >= 26 && $umur <= 35) return '26-35';
+                    if ($umur >= 36 && $umur <= 45) return '36-45';
+                    if ($umur > 45) return '46+';
+                    return '18-25'; // Default jika di luar range
+                } catch (\Exception $e) {
+                    return '18-25'; // Default jika parsing gagal
+                }
+            })
+            ->map(function($group) {
+                return $group->count();
+            });
+
+        $demografiUsia = $demografiUsia->map(function($item) use ($usiaData) {
+            $item->jumlah = $usiaData->get($item->kelompok_usia, 0);
+            return $item;
+        });
 
         return view('admin.dss.index', compact(
             'supplyDemandPerSektor',

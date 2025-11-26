@@ -104,21 +104,51 @@ function getMarkerStyle(jumlah) {
  * @returns {string} HTML content
  */
 function createPopupContent(kec, jobsRoute) {
+    const pencariKerja = kec.total_pencari_kerja || 0;
+    const menganggur = kec.total_menganggur || 0;
+    const tingkatPengangguran = kec.tingkat_pengangguran || 0;
+
     return `
-        <div style="min-width: 200px;">
-            <h3 style="font-size: 18px; font-weight: 700; color: #1e40af; margin-bottom: 8px;">
+        <div style="min-width: 250px;">
+            <h3 style="font-size: 18px; font-weight: 700; color: #1e40af; margin-bottom: 12px;">
                 ${kec.nama}
             </h3>
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 8px; background: #eff6ff; border-radius: 6px;">
-                <svg style="width: 20px; height: 20px; color: #3b82f6;" fill="currentColor" viewBox="0 0 20 20">
+            
+            <!-- Lowongan Kerja -->
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 8px; background: #eff6ff; border-radius: 6px;">
+                <svg style="width: 18px; height: 18px; color: #3b82f6;" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
                 </svg>
-                <div>
-                    <div style="font-size: 12px; color: #64748b;">Lowongan Aktif</div>
-                    <div style="font-size: 24px; font-weight: 800; color: #1e40af;">${
+                <div style="flex: 1;">
+                    <div style="font-size: 11px; color: #64748b;">Lowongan Aktif</div>
+                    <div style="font-size: 20px; font-weight: 700; color: #1e40af;">${
                         kec.jumlah_lowongan
                     }</div>
+                </div>
+            </div>
+            
+            <!-- Pencari Kerja -->
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 8px; background: #fef3c7; border-radius: 6px;">
+                <svg style="width: 18px; height: 18px; color: #f59e0b;" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                </svg>
+                <div style="flex: 1;">
+                    <div style="font-size: 11px; color: #92400e;">Pencari Kerja</div>
+                    <div style="font-size: 20px; font-weight: 700; color: #f59e0b;">${pencariKerja}</div>
+                </div>
+            </div>
+            
+            <!-- Pengangguran -->
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 8px; background: #fee2e2; border-radius: 6px;">
+                <svg style="width: 18px; height: 18px; color: #ef4444;" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <div style="flex: 1;">
+                    <div style="font-size: 11px; color: #991b1b;">Menganggur</div>
+                    <div style="font-size: 20px; font-weight: 700; color: #ef4444;">
+                        ${menganggur} <span style="font-size: 12px; color: #b91c1c;">(${tingkatPengangguran}%)</span>
+                    </div>
                 </div>
             </div>
             ${

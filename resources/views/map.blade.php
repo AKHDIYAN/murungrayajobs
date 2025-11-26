@@ -95,36 +95,41 @@
                 <p class="text-xs mt-2 opacity-75">tersebar di peta</p>
             </div>
 
-            <!-- Kecamatan Terbanyak -->
+            <!-- Pencari Kerja -->
             <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 text-white shadow-lg">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm opacity-90 mb-1">Terbanyak</p>
-                        <p class="text-xl font-black truncate">{{ $kecamatanTerbanyak->nama_kecamatan ?? 'N/A' }}</p>
+                        <p class="text-sm opacity-90 mb-1">Pencari Kerja</p>
+                        <p class="text-3xl font-black">{{ $totalPencariKerja ?? 0 }}</p>
                     </div>
                     <div class="bg-white/20 p-3 rounded-lg">
                         <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
                         </svg>
                     </div>
                 </div>
-                <p class="text-xs mt-2 opacity-75">{{ $kecamatanTerbanyak->total ?? 0 }} lowongan</p>
+                <p class="text-xs mt-2 opacity-75">terdaftar di sistem</p>
             </div>
 
-            <!-- Update Terakhir -->
+            <!-- Tingkat Pengangguran -->
             <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white shadow-lg">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm opacity-90 mb-1">Update Terakhir</p>
-                        <p class="text-lg font-black">{{ now()->format('d M Y') }}</p>
+                        <p class="text-sm opacity-90 mb-1">Menganggur</p>
+                        <p class="text-3xl font-black">{{ $totalMenganggur ?? 0 }}</p>
                     </div>
                     <div class="bg-white/20 p-3 rounded-lg">
                         <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                         </svg>
                     </div>
                 </div>
-                <p class="text-xs mt-2 opacity-75">data real-time</p>
+                <p class="text-xs mt-2 opacity-75">
+                    @php
+                        $persenPengangguran = $totalPencariKerja > 0 ? round(($totalMenganggur / $totalPencariKerja) * 100, 1) : 0;
+                    @endphp
+                    {{ $persenPengangguran }}% dari total
+                </p>
             </div>
         </div>
     </div>

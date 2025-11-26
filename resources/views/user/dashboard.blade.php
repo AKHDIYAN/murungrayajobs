@@ -110,6 +110,61 @@
     </div>
 </div>
 
+<!-- Pelatihan Statistics -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <!-- Total Pelatihan -->
+    <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+        <div class="p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm font-semibold mb-1">Pelatihan Diikuti</p>
+                    <h3 class="text-3xl font-bold text-gray-900">{{ $totalPelatihan }}</h3>
+                    <p class="text-xs text-gray-500 mt-1">Total pendaftaran</p>
+                </div>
+                <div class="bg-amber-100 p-4 rounded-full">
+                    <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="{{ route('user.pelatihan.riwayat') }}" class="text-amber-600 hover:text-amber-700 text-sm font-semibold flex items-center gap-1">
+                    Lihat Riwayat
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pelatihan Diterima -->
+    <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+        <div class="p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm font-semibold mb-1">Pelatihan Diterima</p>
+                    <h3 class="text-3xl font-bold text-gray-900">{{ $pelatihanDiterima }}</h3>
+                    <p class="text-xs text-gray-500 mt-1">Siap untuk diikuti</p>
+                </div>
+                <div class="bg-purple-100 p-4 rounded-full">
+                    <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="{{ route('pelatihan.index') }}" class="text-purple-600 hover:text-purple-700 text-sm font-semibold flex items-center gap-1">
+                    Cari Pelatihan
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Recent Applications -->
 <div class="bg-white rounded-xl shadow-md mb-8 overflow-hidden">
     <div class="px-6 py-5 border-b border-gray-200">

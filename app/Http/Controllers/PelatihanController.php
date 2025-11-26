@@ -99,11 +99,14 @@ class PelatihanController extends Controller
         PelatihanPeserta::create([
             'id_pelatihan' => $id,
             'id_user' => Auth::id(),
-            'status_pendaftaran' => 'Pending',
+            'status_pendaftaran' => 'Diterima',
             'alasan_mengikuti' => $request->alasan_mengikuti,
         ]);
 
+        // Decrease available quota
+        $pelatihan->decrement('sisa_kuota');
+
         return redirect()->route('user.pelatihan.riwayat')
-                       ->with('success', 'Pendaftaran berhasil! Menunggu konfirmasi admin.');
+                       ->with('success', 'Pendaftaran berhasil! Anda telah terdaftar dalam pelatihan ini.');
     }
 }

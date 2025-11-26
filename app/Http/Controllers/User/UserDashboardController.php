@@ -40,6 +40,12 @@ class UserDashboardController extends Controller
                                        ->where('status', 'Ditolak')
                                        ->count();
 
+        // Pelatihan Statistics
+        $totalPelatihan = \App\Models\PelatihanPeserta::where('id_user', $user->id_user)->count();
+        $pelatihanDiterima = \App\Models\PelatihanPeserta::where('id_user', $user->id_user)
+                                                          ->where('status_pendaftaran', 'Diterima')
+                                                          ->count();
+
         // Recent applications
         $recentApplications = Lamaran::with(['pekerjaan.perusahaan', 'pekerjaan.kecamatan'])
                                      ->where('id_user', $user->id_user)
@@ -66,6 +72,8 @@ class UserDashboardController extends Controller
             'pendingApplications',
             'acceptedApplications',
             'rejectedApplications',
+            'totalPelatihan',
+            'pelatihanDiterima',
             'recentApplications',
             'recommendedJobs'
         ));

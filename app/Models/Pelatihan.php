@@ -23,6 +23,7 @@ class Pelatihan extends Model
         'tanggal_selesai',
         'durasi_hari',
         'kuota_peserta',
+        'sisa_kuota',
         'jenis_pelatihan',
         'lokasi',
         'persyaratan',
@@ -81,12 +82,7 @@ class Pelatihan extends Model
     // Accessors
     public function getJumlahPesertaAttribute()
     {
-        return $this->pesertaDiterima()->count();
-    }
-
-    public function getSisaKuotaAttribute()
-    {
-        return $this->kuota_peserta - $this->jumlah_peserta;
+        return $this->peserta()->count();
     }
 
     public function getIsPendaftaranBukaAttribute()

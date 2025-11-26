@@ -62,19 +62,20 @@ class HomeController extends Controller
             ->leftJoin('user', 'kecamatan.id_kecamatan', '=', 'user.id_kecamatan')
             ->selectRaw('
                 kecamatan.id_kecamatan, 
-                kecamatan.nama_kecamatan, 
-                kecamatan.slug,
+                kecamatan.nama_kecamatan,
                 COUNT(DISTINCT pekerjaan.id_pekerjaan) as total_lowongan,
                 COUNT(DISTINCT user.id_user) as total_pencari_kerja,
                 SUM(CASE WHEN user.status_kerja = "Menganggur" THEN 1 ELSE 0 END) as total_menganggur,
                 SUM(CASE WHEN user.status_kerja = "Bekerja" THEN 1 ELSE 0 END) as total_bekerja
             ')
-            ->groupBy('kecamatan.id_kecamatan', 'kecamatan.nama_kecamatan', 'kecamatan.slug')
+            ->groupBy('kecamatan.id_kecamatan', 'kecamatan.nama_kecamatan')
             ->get()
             ->map(function($item) {
                 $item->tingkat_pengangguran = $item->total_pencari_kerja > 0 
                     ? round(($item->total_menganggur / $item->total_pencari_kerja) * 100, 1)
                     : 0;
+                // Untuk compatibility dengan yang lama, rename total_lowongan ke total
+                $item->total = $item->total_lowongan;
                 return $item;
             });
 

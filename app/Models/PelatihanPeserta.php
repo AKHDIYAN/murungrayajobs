@@ -17,6 +17,7 @@ class PelatihanPeserta extends Model
         'id_user',
         'status_pendaftaran',
         'alasan_mengikuti',
+        'file_sertifikat',
         'status_kehadiran',
         'persentase_kehadiran',
         'lulus',

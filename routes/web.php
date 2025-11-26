@@ -69,6 +69,9 @@ Route::prefix('auth')->name('auth.')->group(function () {
     Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
 });
 
+// Alias for login route (for compatibility)
+Route::get('/login', [UserAuthController::class, 'showLoginForm'])->name('login');
+
 // User Password Reset Routes
 Route::prefix('password')->name('user.password.')->group(function () {
     Route::get('/forgot', [UserForgotPasswordController::class, 'showForgotForm'])->name('forgot');
@@ -95,6 +98,12 @@ Route::prefix('user')->name('user.')->middleware(['user'])->group(function () {
         Route::get('/', [UserApplicationController::class, 'index'])->name('index');
         Route::get('/{id}', [UserApplicationController::class, 'show'])->name('show');
         Route::post('/', [UserApplicationController::class, 'store'])->name('store');
+    });
+    
+    // Pelatihan (Training History)
+    Route::prefix('pelatihan')->name('pelatihan.')->group(function () {
+        Route::get('/riwayat', [\App\Http\Controllers\User\UserPelatihanController::class, 'riwayat'])->name('riwayat');
+        Route::get('/{pesertaId}/sertifikat', [\App\Http\Controllers\User\UserPelatihanController::class, 'downloadSertifikat'])->name('sertifikat');
     });
     
     // Settings
@@ -327,8 +336,21 @@ Route::prefix('admin')->name('admin.')->middleware(['admin', 'admin.logger'])->g
         Route::get('/{id}/edit', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'edit'])->name('edit');
         Route::put('/{id}', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'update'])->name('update');
         Route::delete('/{id}', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/export-peserta', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'exportPeserta'])->name('export-peserta');
+        Route::get('/{id}/peserta/{pesertaId}/sertifikat', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'generateSertifikat'])->name('peserta.sertifikat');
+        Route::post('/{id}/peserta/{pesertaId}/upload-sertifikat', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'uploadSertifikat'])->name('peserta.uploadSertifikat');
+        Route::delete('/{id}/peserta/{pesertaId}/delete-sertifikat', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'deleteSertifikat'])->name('peserta.deleteSertifikat');
         Route::post('/{id}/peserta/{pesertaId}/approve', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'approvePeserta'])->name('peserta.approve');
         Route::post('/{id}/peserta/{pesertaId}/reject', [\App\Http\Controllers\Admin\AdminPelatihanController::class, 'rejectPeserta'])->name('peserta.reject');
+    });
+    
+    // Laporan/Reports
+    Route::prefix('laporan')->name('laporan.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\LaporanController::class, 'index'])->name('index');
+        Route::get('/ketenagakerjaan', [\App\Http\Controllers\Admin\LaporanController::class, 'laporanKetenagakerjaan'])->name('ketenagakerjaan');
+        Route::get('/lowongan', [\App\Http\Controllers\Admin\LaporanController::class, 'laporanLowongan'])->name('lowongan');
+        Route::get('/lamaran', [\App\Http\Controllers\Admin\LaporanController::class, 'laporanLamaran'])->name('lamaran');
+        Route::get('/pelatihan', [\App\Http\Controllers\Admin\LaporanController::class, 'laporanPelatihan'])->name('pelatihan');
     });
     
     // System Settings
