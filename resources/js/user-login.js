@@ -1,5 +1,10 @@
 // Password visibility toggle
-window.togglePassword = function () {
+window.togglePassword = function (event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
     const passwordInput = document.getElementById("password");
     const eyeIcon = document.getElementById("eye-icon");
 
@@ -17,4 +22,6 @@ window.togglePassword = function () {
             `;
         }
     }
+
+    return false;
 };

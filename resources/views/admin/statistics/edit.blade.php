@@ -22,7 +22,7 @@
 
     <!-- Form Card -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-        <form action="{{ route('admin.statistics.update', $data->id) }}" method="POST">
+        <form action="{{ route('admin.statistics.update', $data->id_statistik) }}" method="POST">
             @csrf
             @method('PUT')
 

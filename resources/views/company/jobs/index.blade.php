@@ -23,7 +23,7 @@
 
     <!-- Filter Section -->
     <div class="bg-white rounded-2xl shadow-lg p-6">
-        <form method="GET" action="{{ route('company.jobs.index') }}" class="flex items-center gap-4">
+        <form method="GET" action="{{ route('company.jobs.index') }}" class="flex items-end gap-4">
             <div class="flex-1">
                 <label for="status" class="block text-sm font-semibold text-gray-700 mb-2">Filter Status</label>
                 <select name="status" 
@@ -36,7 +36,7 @@
                     <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
                 </select>
             </div>
-            <div class="flex items-end gap-2">
+            <div class="flex gap-2">
                 <button type="submit" 
                         class="px-6 py-2.5 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors">
                     Filter
