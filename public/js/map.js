@@ -181,13 +181,19 @@ function createPopupContent(kec, jobsRoute) {
 function initializeMap(kecamatanStatsFromServer, jobsRoute) {
     const kecamatanData = [...kecamatanCoordinates];
 
-    // Update jumlah lowongan from server data
+    // Update data from server (jobs + workforce data)
     kecamatanData.forEach((kec) => {
         const serverData = kecamatanStatsFromServer.find(
             (s) => s.nama_kecamatan.toLowerCase() === kec.nama.toLowerCase()
         );
         if (serverData) {
-            kec.jumlah_lowongan = parseInt(serverData.total) || 0;
+            kec.jumlah_lowongan = parseInt(serverData.total_lowongan) || 0;
+            kec.total_pencari_kerja =
+                parseInt(serverData.total_pencari_kerja) || 0;
+            kec.total_menganggur = parseInt(serverData.total_menganggur) || 0;
+            kec.total_bekerja = parseInt(serverData.total_bekerja) || 0;
+            kec.tingkat_pengangguran =
+                parseFloat(serverData.tingkat_pengangguran) || 0;
         }
     });
 

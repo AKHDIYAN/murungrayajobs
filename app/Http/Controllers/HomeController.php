@@ -53,30 +53,40 @@ class HomeController extends Controller
      */
     public function map()
     {
-        // Get kecamatan with job counts (menggunakan status 'Diterima' dan tanggal tidak expired)
-        $kecamatanStats = Kecamatan::leftJoin('pekerjaan', function($join) {
-                $join->on('kecamatan.id_kecamatan', '=', 'pekerjaan.id_kecamatan')
-                     ->where('pekerjaan.status', '=', 'Diterima')
-                     ->whereDate('pekerjaan.tanggal_expired', '>=', \Carbon\Carbon::today());
-            })
-            ->leftJoin('user', 'kecamatan.id_kecamatan', '=', 'user.id_kecamatan')
-            ->selectRaw('
-                kecamatan.id_kecamatan, 
-                kecamatan.nama_kecamatan,
-                COUNT(DISTINCT pekerjaan.id_pekerjaan) as total_lowongan,
-                COUNT(DISTINCT user.id_user) as total_pencari_kerja,
-                SUM(CASE WHEN user.status_kerja = "Menganggur" THEN 1 ELSE 0 END) as total_menganggur,
-                SUM(CASE WHEN user.status_kerja = "Bekerja" THEN 1 ELSE 0 END) as total_bekerja
-            ')
-            ->groupBy('kecamatan.id_kecamatan', 'kecamatan.nama_kecamatan')
+        // Get kecamatan with job counts and user data
+        $kecamatanStats = Kecamatan::select([
+                'kecamatan.id_kecamatan', 
+                'kecamatan.nama_kecamatan'
+            ])
             ->get()
-            ->map(function($item) {
-                $item->tingkat_pengangguran = $item->total_pencari_kerja > 0 
-                    ? round(($item->total_menganggur / $item->total_pencari_kerja) * 100, 1)
+            ->map(function($kecamatan) {
+                // Count jobs for this kecamatan
+                $totalLowongan = Pekerjaan::where('id_kecamatan', $kecamatan->id_kecamatan)
+                    ->where('status', 'Diterima')
+                    ->whereDate('tanggal_expired', '>=', \Carbon\Carbon::today())
+                    ->count();
+
+                // Count users for this kecamatan
+                $totalPencariKerja = User::where('id_kecamatan', $kecamatan->id_kecamatan)->count();
+                $totalMenganggur = User::where('id_kecamatan', $kecamatan->id_kecamatan)
+                    ->where('status_kerja', 'Menganggur')
+                    ->count();
+                $totalBekerja = User::where('id_kecamatan', $kecamatan->id_kecamatan)
+                    ->where('status_kerja', 'Bekerja')
+                    ->count();
+
+                $kecamatan->total_lowongan = $totalLowongan;
+                $kecamatan->total_pencari_kerja = $totalPencariKerja;
+                $kecamatan->total_menganggur = $totalMenganggur;
+                $kecamatan->total_bekerja = $totalBekerja;
+                $kecamatan->tingkat_pengangguran = $totalPencariKerja > 0 
+                    ? round(($totalMenganggur / $totalPencariKerja) * 100, 1)
                     : 0;
-                // Untuk compatibility dengan yang lama, rename total_lowongan ke total
-                $item->total = $item->total_lowongan;
-                return $item;
+                
+                // Untuk compatibility dengan yang lama
+                $kecamatan->total = $totalLowongan;
+
+                return $kecamatan;
             });
 
         // Total lowongan aktif
