@@ -33,8 +33,17 @@
                     </div>
                 </a>
 
+                <!-- Hamburger Button (Mobile) -->
+                <div class="md:hidden flex items-center">
+                    <button id="navbar-toggle" class="text-gray-700 hover:text-blue-600 focus:outline-none" aria-label="Menu">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+
                 <!-- Navigation Menu -->
-                <div class="hidden md:flex items-center gap-2">
+                <div class="hidden md:flex items-center gap-2" id="navbar-menu">
                     <a href="{{ route('home') }}" class="px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 font-medium flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
@@ -237,6 +246,67 @@
 
     <!-- FOOTER -->
     <footer class="bg-gray-900 text-gray-300 py-12">
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-40 z-50 hidden">
+                <div class="absolute top-0 right-0 w-4/5 max-w-xs bg-white h-full shadow-lg p-6 flex flex-col gap-4 animate-slide-in">
+                    <button id="navbar-close" class="self-end text-gray-700 hover:text-blue-600 mb-4" aria-label="Tutup Menu">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <a href="{{ route('home') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Beranda</a>
+                    <a href="{{ route('jobs.index') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Lowongan</a>
+                    <a href="{{ route('statistics.index') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Statistik</a>
+                    <a href="{{ route('map') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Peta</a>
+                    <a href="{{ route('pelatihan.index') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Pelatihan</a>
+                    @auth('web')
+                        <a href="{{ route('user.dashboard') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Dashboard</a>
+                        <a href="{{ route('user.applications.index') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Lamaran Saya</a>
+                        <a href="{{ route('user.pelatihan.riwayat') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Riwayat Pelatihan</a>
+                        <a href="{{ route('user.profile') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Profil</a>
+                        <a href="{{ route('user.settings') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Pengaturan</a>
+                        <form action="{{ route('auth.logout') }}" method="POST" class="mt-2">
+                            @csrf
+                            <button type="submit" class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 font-medium">Logout</button>
+                        </form>
+                    @elseif(auth()->guard('company')->check())
+                        <a href="{{ route('company.dashboard') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Dashboard Perusahaan</a>
+                    @elseif(auth()->guard('admin')->check())
+                        <a href="{{ route('admin.dashboard') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Admin Panel</a>
+                    @else
+                        <a href="{{ route('auth.login') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Login User</a>
+                        <a href="{{ route('company.login') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Login Perusahaan</a>
+                        <a href="{{ route('admin.login') }}" class="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 font-medium">Login Admin</a>
+                    @endauth
+                </div>
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const navbarToggle = document.getElementById('navbar-toggle');
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    const navbarClose = document.getElementById('navbar-close');
+                    // Open mobile menu
+                    if (navbarToggle) {
+                        navbarToggle.addEventListener('click', function () {
+                            mobileMenu.classList.remove('hidden');
+                        });
+                    }
+                    // Close mobile menu
+                    if (navbarClose) {
+                        navbarClose.addEventListener('click', function () {
+                            mobileMenu.classList.add('hidden');
+                        });
+                    }
+                    // Close menu when clicking outside
+                    if (mobileMenu) {
+                        mobileMenu.addEventListener('click', function (e) {
+                            if (e.target === mobileMenu) {
+                                mobileMenu.classList.add('hidden');
+                            }
+                        });
+                    }
+                });
+            </script>
         <div class="container mx-auto px-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- Kolom 1: Info Pemerintah -->

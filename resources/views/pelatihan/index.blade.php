@@ -61,8 +61,8 @@
 </div>
 
 <!-- Pelatihan List -->
-<div class="container mx-auto px-4 py-12">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="container mx-auto px-2 py-6 md:px-4 md:py-12">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         @forelse($pelatihan as $item)
         <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
             @if($item->foto_banner)
@@ -77,7 +77,7 @@
             </div>
             @endif
 
-            <div class="p-6 flex flex-col flex-grow">
+            <div class="p-4 md:p-6 flex flex-col flex-grow">
                 <div class="flex items-center gap-2 mb-3">
                     <span class="px-3 py-1 text-xs font-semibold rounded-full 
                         @if($item->status == 'Dibuka') bg-green-100 text-green-700
@@ -90,15 +90,15 @@
                     </span>
                 </div>
 
-                <h3 class="text-lg font-bold text-gray-900 mb-3 line-clamp-2">
+                <h3 class="text-base md:text-lg font-bold text-gray-900 mb-3 line-clamp-2">
                     {{ $item->nama_pelatihan }}
                 </h3>
                 
-                <p class="text-sm text-gray-600 mb-4 line-clamp-2">
+                <p class="text-xs md:text-sm text-gray-600 mb-4 line-clamp-2">
                     {{ $item->deskripsi }}
                 </p>
 
-                <div class="space-y-2 flex-grow mb-4">
+                <div class="space-y-2 flex-grow mb-2 md:mb-4">
                     <div class="flex items-center text-sm text-gray-600">
                         <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -114,13 +114,13 @@
                 </div>
 
                 <a href="{{ route('pelatihan.show', $item->id_pelatihan) }}" 
-                   class="block w-full text-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-colors mt-auto">
+                   class="block w-full text-center px-3 py-2 md:px-4 md:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-colors mt-auto text-sm md:text-base">
                     Lihat Detail
                 </a>
             </div>
         </div>
         @empty
-        <div class="col-span-3 text-center py-12">
+        <div class="col-span-1 md:col-span-3 text-center py-12">
             <svg class="w-20 h-20 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
